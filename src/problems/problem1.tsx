@@ -1,8 +1,8 @@
 import _ from 'lodash'
 import Problem from '../problem'
 
-async function parse_input(input_name: string): Promise<Array<number>> {
-  const content = (await (await fetch(input_name)).text()).trim();
+function parse_input(input: string): Array<number> {
+  const content = input.trim();
   return _.map(content, c => { switch (c) {
     case "(": return 1;
     case ")": return -1;
@@ -12,14 +12,14 @@ async function parse_input(input_name: string): Promise<Array<number>> {
   }});
 }
 
-async function part1(input_name: string): Promise<Number> {
-  const instructions = await parse_input(input_name);
+async function part1(input: string): Promise<Number> {
+  const instructions = parse_input(input);
   const result = _.sum(instructions);
   return result;
 }
 
-async function part2(input_name: string): Promise<Number|undefined> {
-  const instructions = await parse_input(input_name);
+async function part2(input: string): Promise<Number|undefined> {
+  const instructions = parse_input(input);
 
   // I wish js had something like scala's scan
   let floor = 0;
@@ -38,14 +38,11 @@ function Problem1() {
   return (
     <>
       <Problem
-        name = { "Day 1 - Part 1" }
-        fn = { part1 }
+        day = { 1 }
+        part1 = { part1 }
+        part2 = { part2 }
         input_name = { "input/input_01.txt" }
-      />
-      <Problem
-        name = { "Day 1 - Part 2" }
-        fn = { part2 }
-        input_name = { "input/input_01.txt" }
+        problem_link = "https://adventofcode.com/2015/day/1"
       />
     </>
   )
