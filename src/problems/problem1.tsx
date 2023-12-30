@@ -1,5 +1,5 @@
-import { useState } from 'react'
 import _ from 'lodash'
+import Problem from '../problem'
 
 async function parse_input(input_name: string): Promise<Array<number>> {
   const content = (await (await fetch(input_name)).text()).trim();
@@ -30,26 +30,23 @@ async function part2(input_name: string): Promise<Number|undefined> {
     }
   }
 
-  return undefined;
+  throw Error("Never found the desired floor.");
 }
 
 function Problem1() {
-  const [result_part_1, set_result_part_1] = useState("");
-  const [result_part_2, set_result_part_2] = useState("");
-
-  part1("input/input_01.txt").then(r => set_result_part_1(String(r)));
-  part2("input/input_01.txt").then(r => set_result_part_2(String(r)));
-
+  // I'd like to pass in both so that only 1 starts at a time.
   return (
     <>
-      <div>
-        <p>
-          <b>Part 1 Result: </b><i>{result_part_1}</i>
-        </p>
-        <p>
-          <b>Part 2 Result: </b><i>{result_part_2}</i>
-        </p>
-      </div>
+      <Problem
+        name = { "Day 1 - Part 1" }
+        fn = { part1 }
+        input_name = { "input/input_01.txt" }
+      />
+      <Problem
+        name = { "Day 1 - Part 2" }
+        fn = { part2 }
+        input_name = { "input/input_01.txt" }
+      />
     </>
   )
 }
