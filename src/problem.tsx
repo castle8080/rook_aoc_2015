@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, FormEvent } from 'react'
 
 interface Result {
     name: string,
@@ -44,14 +44,14 @@ async function run_problem<T>(
 
 async function run_problems(
     props: ProblemProps,
+    input_name: string,
     part1_cb: (result: Result) => void,
     part2_cb: (result: Result) => void,
-    processing_error_cb: (error: String|null) => void)
+    processing_error_cb: (error: string|null) => void)
     : Promise<void>
 {
     try {
-        const xhr_result = await fetch(props.input_name);
-        console.log(xhr_result);
+        const xhr_result = await fetch(input_name);
         if (!xhr_result.ok) {
             throw Error(`Unable to retrieve input: ${xhr_result.statusText}.`);
         }
@@ -105,7 +105,7 @@ function ResultDisplay(props: ResultDisplayProps) {
 interface ProblemProps {
     day: number,
     problem_link: string,
-    input_name: string,
+    inputs: Array<string>,
     part1: ((input: string) => Promise<any>)|null,
     part2: ((input: string) => Promise<any>)|null,
 }
@@ -113,16 +113,22 @@ interface ProblemProps {
 function Problem(props: ProblemProps) {
     const [result1, set_result1] = useState<Result|null>(null);
     const [result2, set_result2] = useState<Result|null>(null);
-    const [processing_error, set_processing_error] = useState<String|null>(null);
+    const [processing_error, set_processing_error] = useState<string|null>(null);
+    const [input_name, set_input] = useState<string>(props.inputs[0]);
 
     useEffect(() => {
         run_problems(
             props,
+            input_name,
             set_result1,
             set_result2,
             set_processing_error,
         );
-    }, []);
+    }, [input_name]);
+
+    function on_select_input(e: FormEvent<HTMLSelectElement>) {
+        set_input(e.currentTarget.value);
+    }
 
     return ( <>
         <h2>Day {props.day}</h2>
@@ -134,8 +140,17 @@ function Problem(props: ProblemProps) {
             </div>
         </> }
         <div>
-            <a href={props.problem_link} target="_blank">Description</a><br/>
-            <a href={props.input_name} target="_blank">Input</a><br/>
+            <p>
+                <a href={props.problem_link} target="_blank">Description</a>
+            </p>
+            <b>Inputs:</b>
+            <p>
+                <select defaultValue={ input_name } onChange={ on_select_input }>
+                    { props.inputs.map((input) => 
+                        <option key={ input }>{ input } </option>
+                    )}
+                </select>
+            </p>
         </div>
         <ResultDisplay result = { result1 }/>
         <ResultDisplay result = { result2 }/>

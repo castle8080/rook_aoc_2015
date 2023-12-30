@@ -1,12 +1,14 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
+
 import {
     createBrowserRouter,
     RouterProvider,
 } from "react-router-dom"
-import App from './App.tsx'
+
 import './index.css'
 
+import App from './App.tsx'
 import Problem1 from './problems/problem1.tsx'
 
 const router = createBrowserRouter([
