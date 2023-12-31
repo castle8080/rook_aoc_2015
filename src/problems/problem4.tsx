@@ -1,10 +1,9 @@
-import _, { first, last } from 'lodash'
+import _ from 'lodash'
 import Problem from '../problem'
 import md5 from 'md5'
 
 function count_leading_zeros(s: string): number {
-    let i = 0;
-    for (; i < s.length; i++) {
+    for (let i = 0, len = s.length; i < len; i++) {
         if (s[i] != '0') {
             return i;
         }
