@@ -1,6 +1,6 @@
-import _ from 'lodash'
-import Problem from '../problem'
-import md5 from 'md5'
+import _ from 'lodash';
+import Problem from '../problem';
+import SparkMD5 from 'spark-md5';
 
 function count_leading_zeros(s: string): number {
     for (let i = 0, len = s.length; i < len; i++) {
@@ -17,7 +17,8 @@ function find_md5_leading_zeros(input: string, needed_lz: number, starting_num: 
     let first_leading = [];
 
     while (true) {
-        const md5_str = md5(input + n);
+        const md5_str = SparkMD5.hash(input + n);
+        
         const lz = count_leading_zeros(md5_str);
         if (lz > last_leading) {
             first_leading.push({ leading_zeros: lz, n: n });
