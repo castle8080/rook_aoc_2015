@@ -18,7 +18,7 @@ async function part1(input: string): Promise<Number> {
     return result;
 }
 
-async function part2(input: string): Promise<Number|undefined> {
+async function part2(input: string): Promise<Number> {
     const instructions = parse_input(input);
 
     // I wish js had something like scala's scan
@@ -34,7 +34,6 @@ async function part2(input: string): Promise<Number|undefined> {
 }
 
 function Problem1() {
-    // I'd like to pass in both so that only 1 starts at a time.
     return (
         <Problem
             day = { 1 }

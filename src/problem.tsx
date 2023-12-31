@@ -51,6 +51,7 @@ async function run_problems(
     : Promise<void>
 {
     try {
+        console.debug(`Fetching: ${input_name}`);
         const xhr_result = await fetch(input_name);
         if (!xhr_result.ok) {
             throw Error(`Unable to retrieve input: ${xhr_result.statusText}.`);
@@ -61,9 +62,11 @@ async function run_problems(
         }
         const input = await xhr_result.text();
         if (props.part1 !== null) {
+            console.debug(`Running: day-${props.day} - part 1`);
             await run_problem(`Part 1`, props.part1!, input, part1_cb);
         }
         if (props.part2 !== null) {
+            console.debug(`Running: day-${props.day} - part 2`);
             await run_problem(`Part 2`, props.part2!, input, part2_cb);
         }
     }
@@ -141,7 +144,7 @@ function Problem(props: ProblemProps) {
         </> }
         <div>
             <p>
-                <a href={props.problem_link} target="_blank">Description</a>
+                <a href={props.problem_link} target="description_view_tab">Description</a>
             </p>
             <b>Inputs:</b>
             <p>
@@ -150,6 +153,9 @@ function Problem(props: ProblemProps) {
                         <option key={ input }>{ input } </option>
                     )}
                 </select>
+            </p>
+            <p>
+                <a href={ input_name } target='input_view_tab'>View Input</a>
             </p>
         </div>
         <ResultDisplay result = { result1 }/>
