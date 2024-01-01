@@ -18,7 +18,6 @@ function find_md5_leading_zeros(input: string, needed_lz: number, starting_num: 
 
     while (true) {
         const md5_str = SparkMD5.hash(input + n);
-        
         const lz = count_leading_zeros(md5_str);
         if (lz > last_leading) {
             first_leading.push({ leading_zeros: lz, n: n });
