@@ -51,8 +51,9 @@ async function run_problems(
     : Promise<void>
 {
     try {
-        console.debug(`Fetching: ${input_name}`);
-        const xhr_result = await fetch(input_name);
+        const input_path = `/input/${input_name}`;
+        console.debug(`Fetching: ${input_path}`);
+        const xhr_result = await fetch(input_path);
         if (!xhr_result.ok) {
             throw Error(`Unable to retrieve input: ${xhr_result.statusText}.`);
         }
@@ -133,34 +134,36 @@ function Problem(props: ProblemProps) {
         set_input(e.currentTarget.value);
     }
 
-    return ( <>
-        <h2>Day {props.day}</h2>
-        { processing_error !== null && <>
+    return (
+        <div className="problem-display">
+            <h2>Day {props.day}</h2>
+            { processing_error !== null && <>
+                <div>
+                    <p>
+                        <b>Error Processing:</b> {processing_error}
+                    </p>
+                </div>
+            </> }
             <div>
                 <p>
-                    <b>Error Processing:</b> {processing_error}
+                    <a href={props.problem_link} target="description_view_tab">Description</a>
+                </p>
+                <b>Inputs:</b>
+                <p>
+                    <select defaultValue={ input_name } onChange={ on_select_input }>
+                        { props.inputs.map((input) => 
+                            <option key={ input }>{ input } </option>
+                        )}
+                    </select>
+                </p>
+                <p>
+                    <a href={ input_name } target='input_view_tab'>View Input</a>
                 </p>
             </div>
-        </> }
-        <div>
-            <p>
-                <a href={props.problem_link} target="description_view_tab">Description</a>
-            </p>
-            <b>Inputs:</b>
-            <p>
-                <select defaultValue={ input_name } onChange={ on_select_input }>
-                    { props.inputs.map((input) => 
-                        <option key={ input }>{ input } </option>
-                    )}
-                </select>
-            </p>
-            <p>
-                <a href={ input_name } target='input_view_tab'>View Input</a>
-            </p>
+            <ResultDisplay result = { result1 }/>
+            <ResultDisplay result = { result2 }/>
         </div>
-        <ResultDisplay result = { result1 }/>
-        <ResultDisplay result = { result2 }/>
-    </> );
+    );
 }
 
 export default Problem

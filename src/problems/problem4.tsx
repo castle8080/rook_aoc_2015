@@ -52,7 +52,7 @@ function Problem4() {
             day = { 4 }
             part1 = { part1 }
             part2 = { part2 }
-            inputs = {[ "input/input_04.txt", "input/input_04_test.txt" ]}
+            inputs = {[ "input_04.txt", "input_04_test.txt" ]}
             problem_link = "https://adventofcode.com/2015/day/4"
         />
     )

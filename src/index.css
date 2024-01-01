@@ -1,0 +1,27 @@
+
+.problems-main {
+    display: flex;
+    flex-direction: row;
+}
+
+.problems-navigation {
+    margin-top: 10px;
+    margin-left: 10px;
+    margin-right: 10px;
+    display: inline-block;
+}
+
+.problems-navigation ul {
+    list-style-type: none;
+    margin-left: 10px;
+    padding: 0px;
+}
+
+.problems-content {
+    margin-top: 10px;
+    margin-left: 10px;
+}
+
+.problems-content h2 {
+    margin-top: 0px;
+}
