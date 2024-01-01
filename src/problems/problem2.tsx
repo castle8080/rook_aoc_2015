@@ -1,5 +1,5 @@
 import _ from 'lodash'
-import Problem from '../problem'
+import Problem from './problem'
 
 interface Box {
     length: number,

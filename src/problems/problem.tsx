@@ -157,7 +157,7 @@ function Problem(props: ProblemProps) {
                     </select>
                 </p>
                 <p>
-                    <a href={ input_name } target='input_view_tab'>View Input</a>
+                    <a href={ "/input/" + input_name } target='input_view_tab'>View Input</a>
                 </p>
             </div>
             <ResultDisplay result = { result1 }/>

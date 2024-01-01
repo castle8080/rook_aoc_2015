@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import Problem from '../problem';
+import Problem from './problem';
 
 function parse_strings(input: string): string[] {
     return input.split("\n").filter((s) => s.length > 0);

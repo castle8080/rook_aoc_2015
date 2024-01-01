@@ -1,5 +1,5 @@
 import _ from 'lodash'
-import Problem from '../problem'
+import Problem from './problem'
 
 function parse_input(input: string): Array<[number, number]> {
     const content = input.trim();
