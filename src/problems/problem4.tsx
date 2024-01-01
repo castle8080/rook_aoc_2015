@@ -2,6 +2,11 @@ import _ from 'lodash';
 import Problem from '../problem';
 import SparkMD5 from 'spark-md5';
 
+interface LeadingZero {
+    leading_zeros: number,
+    n: number,
+}
+
 function count_leading_zeros(s: string): number {
     for (let i = 0, len = s.length; i < len; i++) {
         if (s[i] != '0') {
@@ -11,13 +16,14 @@ function count_leading_zeros(s: string): number {
     return 0;
 }
 
-function find_md5_leading_zeros(input: string, needed_lz: number, starting_num: number) {
+function find_md5_leading_zeros(input: string, needed_lz: number, starting_num: number): LeadingZero[] {
     let n = starting_num;
     let last_leading = 0;
     let first_leading = [];
 
     while (true) {
         const md5_str = SparkMD5.hash(input + n);
+
         const lz = count_leading_zeros(md5_str);
         if (lz > last_leading) {
             first_leading.push({ leading_zeros: lz, n: n });
@@ -39,6 +45,8 @@ async function part1(input: string): Promise<number> {
 
 async function part2(input: string): Promise<number> {
     // Is there a way around brute forcing this?
+    // I tried using hash-wasm to see if it was faster, but it wasn't for this case.
+    // I assume the issue with hash-wasm is the overhead of it being async.
     input = input.trim();
     const result = find_md5_leading_zeros(input, 6, 0);
     console.log(result);
