@@ -159,6 +159,10 @@ class Circuit {
         this.cached_signals = new Map();
     }
 
+    clear_cached_signals() {
+        this.cached_signals.clear();
+    }
+
     add_wire(wire: Wire) {
         this.wires.set(wire.name, wire);
     }
@@ -199,7 +203,17 @@ async function part1(input: string): Promise<number> {
 }
 
 async function part2(input: string): Promise<number> {
-    return -1;
+    const circuit = Circuit.parse(input);
+    const signal = circuit.get_signal('a');
+
+    circuit.clear_cached_signals();
+
+    // Re-configure wire b.
+    circuit.add_wire(new Wire("b", new LiteralNode(signal)));
+
+    const new_signal = circuit.get_signal('a');
+
+    return new_signal;
 }
 
 function Problem7() {
