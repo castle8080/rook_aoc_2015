@@ -2,27 +2,30 @@ import _ from 'lodash';
 import Problem from './problem';
 
 interface SequenceHandler {
-    on_char(c: string): void;
+    on_item(n: number): void;
     on_end(): void;
 }
 
 class SequenceCollector implements SequenceHandler {
-    output: string[];
+    output: number[];
 
     constructor() {
         this.output = [];
     }
 
-    on_char(c: string) {
-        this.output.push(c);
+    on_item(n: number) {
+        this.output.push(n);
     }
 
     on_end() {
-        // nothing to do.
     }
 
     content(): string {
-        return this.output.join('');
+        let result = "";
+        for (const n of this.output) {
+            result += n;
+        }
+        return result;
     }
 }
 
@@ -33,7 +36,7 @@ class SequenceCounter implements SequenceHandler {
         this.count = 0;
     }
 
-    on_char(c: string) {
+    on_item(n: number) {
         this.count++;
     }
 
@@ -43,13 +46,13 @@ class SequenceCounter implements SequenceHandler {
 }
 
 class SequenceEncoder implements SequenceHandler {
-    last_c: string|null;
-    last_c_count: number;
+    last_n: number|null;
+    last_n_count: number;
     next: SequenceHandler;
 
     constructor(next: SequenceHandler) {
-        this.last_c = null;
-        this.last_c_count = 0;
+        this.last_n = null;
+        this.last_n_count = 0;
         this.next = next;
     }
 
@@ -61,26 +64,26 @@ class SequenceEncoder implements SequenceHandler {
         return current;
     }
 
-    on_char(c: string) {
-        if (this.last_c == null) {
-            this.last_c = c;
-            this.last_c_count = 1;
+    on_item(n: number) {
+        if (this.last_n == null) {
+            this.last_n = n;
+            this.last_n_count = 1;
         }
-        else if (c != this.last_c) {
-            this.next.on_char(String(this.last_c_count));
-            this.next.on_char(this.last_c);
-            this.last_c = c;
-            this.last_c_count = 1;
+        else if (n != this.last_n) {
+            this.next.on_item(this.last_n_count);
+            this.next.on_item(this.last_n);
+            this.last_n = n;
+            this.last_n_count = 1;
         }
         else {
-            this.last_c_count++;
+            this.last_n_count++;
         }
     }
 
     on_end() {
-        if (this.last_c != null) {
-            this.next.on_char(String(this.last_c_count));
-            this.next.on_char(this.last_c);
+        if (this.last_n != null) {
+            this.next.on_item(this.last_n_count);
+            this.next.on_item(this.last_n);
             this.next.on_end();
         }
     }
@@ -88,7 +91,7 @@ class SequenceEncoder implements SequenceHandler {
 
 function feed_input_sequence(handler: SequenceHandler, input: string) {
     for (let i = 0; i < input.length; i++) {
-        handler.on_char(input[i]);
+        handler.on_item(parseInt(input[i]));
     }
     handler.on_end();
 }
