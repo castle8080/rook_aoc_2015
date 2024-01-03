@@ -89,34 +89,36 @@ class SequenceEncoder implements SequenceHandler {
     }
 }
 
-function feed_input_sequence(handler: SequenceHandler, input: string) {
-    for (let i = 0; i < input.length; i++) {
-        handler.on_item(parseInt(input[i]));
+class SequenceHandlers {
+    static feed_input_sequence(handler: SequenceHandler, input: string) {
+        for (let i = 0; i < input.length; i++) {
+            handler.on_item(parseInt(input[i]));
+        }
+        handler.on_end();
     }
-    handler.on_end();
-}
-
-function encode_sequences(input: string, iterations: number): string {
-    const collector = new SequenceCollector();
-    const processor = SequenceEncoder.wrap_iterations(collector, iterations);
-
-    feed_input_sequence(processor, input);
-
-    return collector.content();
-}
-
-function count_sequence_after_iterations(input: string, iterations: number): number {
-    const counter = new SequenceCounter();
-    const processor = SequenceEncoder.wrap_iterations(counter, iterations);
-
-    feed_input_sequence(processor, input);
-
-    return counter.count;
+    
+    static encode_sequences(input: string, iterations: number): string {
+        const collector = new SequenceCollector();
+        const processor = SequenceEncoder.wrap_iterations(collector, iterations);
+    
+        SequenceHandlers.feed_input_sequence(processor, input);
+    
+        return collector.content();
+    }
+    
+    static count_sequence_after_iterations(input: string, iterations: number): number {
+        const counter = new SequenceCounter();
+        const processor = SequenceEncoder.wrap_iterations(counter, iterations);
+    
+        SequenceHandlers.feed_input_sequence(processor, input);
+    
+        return counter.count;
+    }
 }
 
 async function part1(input: string): Promise<number> {
     const content = input.trim();
-    const s = encode_sequences(content, 40);
+    const s = SequenceHandlers.encode_sequences(content, 40);
     const result = s.length;
     return result;
 }
@@ -128,7 +130,7 @@ async function part2(input: string): Promise<number> {
     // splitting recursively quite often and leading to lots of checks
     // if the next sequence was also composed of elements.
     const content = input.trim();
-    const result = count_sequence_after_iterations(content, 50);
+    const result = SequenceHandlers.count_sequence_after_iterations(content, 50);
     return result;
 }
 
