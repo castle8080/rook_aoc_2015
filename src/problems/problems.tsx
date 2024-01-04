@@ -11,6 +11,7 @@ import Problem7 from "./problem7";
 import Problem8 from "./problem8";
 import Problem9 from "./problem9";
 import Problem10 from "./problem10";
+import Problem11 from "./problem11";
 
 const PROBLEMS = [
     Problem1,
@@ -23,6 +24,7 @@ const PROBLEMS = [
     Problem8,
     Problem9,
     Problem10,
+    Problem11
 ];
 
 interface ProblemInfo {
