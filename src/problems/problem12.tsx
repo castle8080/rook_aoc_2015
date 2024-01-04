@@ -12,10 +12,10 @@ function count_numbers(data: any, filter: (data: any) => boolean): number {
         return 0;
     }
     else if (_.isArray(data)) {
-        return _.reduce(data as any[], (a, b) => a + count_numbers(b, filter), 0);
+        return _.reduce(data as any[], (total, v) => total + count_numbers(v, filter), 0);
     }
     else if (_.isObject(data)) {
-        return _.reduce(Object.values(data), (a, b) => a + count_numbers(b, filter), 0);
+        return _.reduce(data, (total, v, _k) => total + count_numbers(v, filter), 0);
     }
     else {
         return 0;
@@ -26,7 +26,7 @@ function red_filter(data: any): boolean {
     if (_.isArray(data) || !_.isObject(data)) {
         return false;
     }
-    return _.find(Object.values(data), (v) => v == "red");
+    return _.find(data, (v) => v == "red") != undefined;
 }
 
 async function part1(input: string): Promise<number> {
