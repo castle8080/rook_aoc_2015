@@ -1,9 +1,6 @@
 import _ from 'lodash';
 import Problem from './problem';
-import { optimizeDeps } from 'vite';
 
-// David would gain 41 happiness units by sitting next to Carol.
-//                                 Alice would lose 2 happiness units by sitting next to Bob.
 const CONNECTION_LINE_REGEX = /^([a-zA-Z]+) would (lose|gain) (\d+) happiness units by sitting next to ([a-zA-Z]+)\.$/;
 
 interface Connection {
@@ -131,6 +128,41 @@ class HappinessGraph {
 
         return optimal!;
     }
+
+    insert_zero_person(name: string, arrangement: string[]): HappinessArrangement {
+        let min_position = -1;
+        let min_position_happiness = 0;
+        let total_happiness = 0;
+        
+        for (let i = 0; i < arrangement.length; i++) {
+            let next_i = (i + 1) % arrangement.length;
+            let h = this.connections.get(arrangement[i])!.get(arrangement[next_i])!;
+            
+            if (min_position == -1) {
+                min_position_happiness = h;
+                min_position = i;
+            }
+            else if (min_position_happiness > h) {
+                total_happiness += min_position_happiness;
+                min_position_happiness = h;
+                min_position = i;
+            }
+            else {
+                total_happiness += h;
+            }
+        }
+
+        let new_arrangement: string[] = [];
+
+        arrangement.forEach((v, i) => {
+            new_arrangement.push(v);
+            if (i == min_position) {
+                new_arrangement.push(name);
+            }
+        });
+
+        return { arrangement: new_arrangement, happiness: total_happiness };
+    }
 }
 
 async function part1(input: string): Promise<number> {
@@ -146,7 +178,16 @@ async function part1(input: string): Promise<number> {
 }
 
 async function part2(input: string): Promise<number> {
-    return -1;
+    const connections = parse_connections(input);
+    const graph = new HappinessGraph();
+
+    graph.add_all(connections);
+    const arrangement = graph.find_max_arrangement();
+
+    const new_arrangement = graph.insert_zero_person("me", arrangement.arrangement);
+    console.log(new_arrangement);
+
+    return new_arrangement.happiness;
 }
 
 function Problem13() {
