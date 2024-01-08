@@ -67,6 +67,14 @@ class Ingredients {
         this.initialize_all_first_ingredient();
     }
 
+    calories() {
+        let total = 0;
+        for (let i = 0; i < this.ingredients.length; i++) {
+            total += this.ingredients[i].calories * this.ingredient_amounts[i];
+        }
+        return total;
+    }
+
     score() {
         let capacity = 0;
         let durability = 0;
@@ -84,12 +92,15 @@ class Ingredients {
         return normalize(capacity) * normalize(durability) * normalize(flavor) * normalize(texture);
     }
 
-    optimize(): number {
+    optimize(constraints: (ingredients: Ingredients) => boolean): number {
         let best_score: null|number = null;
         let best_amounts: null|number[] = null;
 
         this.initialize_all_first_ingredient();
         this.try_combinations(0, () => {
+            if (!constraints(this)) {
+                return;
+            }
             const score = this.score();
             if (best_score == null || score > best_score) {
                 best_score = score;
@@ -134,12 +145,14 @@ class Ingredients {
 
 async function part1(input: string): Promise<number> {
     const ingredients = new Ingredients(100, Ingredient.parse_all(input));
-    const score = ingredients.optimize();
+    const score = ingredients.optimize((_) => true);
     return score;
 }
 
 async function part2(input: string): Promise<number> {
-    return -1;
+    const ingredients = new Ingredients(100, Ingredient.parse_all(input));
+    const score = ingredients.optimize((ingredients) => ingredients.calories() == 500);
+    return score;
 }
 
 function Problem15() {
