@@ -1,4 +1,4 @@
-import { _ } from 'lodash';
+import _ from 'lodash';
 import Problem from './problem';
 
 // Candy: capacity 0, durability -1, flavor 0, texture 5, calories 8

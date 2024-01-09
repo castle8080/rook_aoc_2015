@@ -1,3 +1,4 @@
+import _, { fill } from 'lodash';
 import Problem from './problem';
 
 function parse_number_list(input: string): number[] {
@@ -68,7 +69,15 @@ async function part1(input: string): Promise<number> {
 }
 
 async function part2(input: string): Promise<number> {
-    return -1;
+    const numbers = parse_number_list(input);
+    const fill_combinations = find_fill_combinations(numbers, 150);
+
+    const min_combo_length = _.min(fill_combinations.map((combo) => combo.length)) ?? 0;
+    const min_combos = fill_combinations.filter((combo) => combo.length == min_combo_length);
+
+    console.log(min_combos);
+
+    return min_combos.length;
 }
 
 function Problem17() {
