@@ -1,4 +1,4 @@
-import _, { fill } from 'lodash';
+import _ from 'lodash';
 import Problem from './problem';
 
 function parse_number_list(input: string): number[] {
@@ -59,8 +59,6 @@ function find_fill_combinations(containers: number[], fill_amount: number): numb
 
     return combinations;
 }
-
-
 
 async function part1(input: string): Promise<number> {
     const numbers = parse_number_list(input);
