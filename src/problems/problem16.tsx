@@ -1,16 +1,10 @@
-import { _ } from 'lodash';
 import Problem from './problem';
 
 const AUNT_LINE_REGEX = /^\s*(\S+) (\d+): (.*)/;
 const ATTR_PAIR_REGEX = /^\s*(\S+): (\d+)\s*$/;
 
-interface AuntAttributes {
-    [key: string]: number
-}
-
-interface AuntAttributeConstraints {
-    [key: string]: (n: number) => boolean
-}
+type AuntAttributes = Record<string, number>;
+type AuntAttributeConstraints = Record<string, (n: number) => boolean>;
 
 function basic_aunt_constraints(attrs: AuntAttributes): AuntAttributeConstraints {
     let constraints: AuntAttributeConstraints = {};
