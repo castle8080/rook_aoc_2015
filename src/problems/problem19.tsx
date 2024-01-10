@@ -11,10 +11,12 @@ interface MoleculePart {
 
 class MoleculeReplacements {
     replacements: Map<string, string[]>;
+    replacements_reversed: Map<string, string>;
     medicine: string;
 
     constructor() {
         this.replacements = new Map();
+        this.replacements_reversed = new Map();
         this.medicine = "";
     }
 
@@ -29,15 +31,9 @@ class MoleculeReplacements {
             this.replacements.set(key, replacements);
         }
         replacements.push(replacement);
-    }
 
-    get_values(part: MoleculePart): string[] {
-        if (!part.replaceable) {
-            return [part.text];
-        }
-        else {
-            return this.replacements.get(part.text)!;
-        }
+        // Add the reverse operation
+        this.replacements_reversed.set(replacement, key);
     }
 
     get_all_single_replacements(): Set<string> {
@@ -60,25 +56,58 @@ class MoleculeReplacements {
         return molecules;
     }
 
+    condense(): [string, number] {
+        const key_regex = new RegExp([...this.replacements_reversed.keys()].join("|"), "g");
+
+        let medicine = this.medicine;
+        let total_changes = 0;
+
+        while (true) {
+            let parts = this.get_medicine_parts_generic(key_regex, medicine);
+            let changes = 0;
+            const buffer = [];
+            for (const part of parts) {
+                if (part.replaceable) {
+                    buffer.push(this.replacements_reversed.get(part.text)!);
+                    changes++;
+                }
+                else {
+                    buffer.push(part.text);
+                }
+            }
+            if (changes == 0) {
+                return [medicine, total_changes];
+            }
+            else {
+                total_changes += changes;
+                medicine = buffer.join('');
+            }
+        }
+    }
+
     get_medicine_parts(): MoleculePart[] {
         let key_regex = new RegExp([...this.replacements.keys()].join("|"), "g");
+        return this.get_medicine_parts_generic(key_regex, this.medicine);
+    }
+
+    get_medicine_parts_generic(key_regex: RegExp, medicine: string): MoleculePart[] {
         let parts: MoleculePart[] = [];
 
         let pos = 0;
         while (true) {
-            let m = key_regex.exec(this.medicine);
+            let m = key_regex.exec(medicine);
             if (m) {
                 const match_str = m[0];
                 const match_start = key_regex.lastIndex - match_str.length;
                 if (match_start > pos) {
-                    parts.push({ text: this.medicine.substring(pos, match_start), replaceable: false });
+                    parts.push({ text: medicine.substring(pos, match_start), replaceable: false });
                 }
                 parts.push({ text: m[0], replaceable: true });
                 pos = key_regex.lastIndex;
             }
             else {
-                if (pos < this.medicine.length) {
-                    parts.push({ text: this.medicine.substring(pos), replaceable: false });
+                if (pos < medicine.length) {
+                    parts.push({ text: medicine.substring(pos), replaceable: false });
                 }
                 break;
             }
@@ -125,7 +154,15 @@ async function part1(input: string): Promise<number> {
 }
 
 async function part2(input: string): Promise<number> {
-    return -1;
+    const medicine_replacements = MoleculeReplacements.parse(input);
+    const [condensed_medicine, changes] = medicine_replacements.condense();
+    console.log("condensed_medicine: " + condensed_medicine + " in " + changes);
+
+    if (condensed_medicine != "e") {
+        throw Error(`Not able to achieve target molecule condensed state.`);
+    }
+
+    return changes;
 }
 
 function Problem19() {
