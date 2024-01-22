@@ -16,6 +16,15 @@ body {
     font-weight: normal;
 }
 
+.main-header-link {
+    margin-right: 10px;
+}
+
+.main-header-sub-link {
+    margin-right: 10px;
+    font-style: italic;
+}
+
 .problems-main {
     display: flex;
     flex-direction: row;
@@ -44,6 +53,10 @@ body {
     margin-top: 0px;
 }
 
+.problem-display button {
+    margin-bottom: 10px;
+}
+
 .result-display {
     border-style: solid;
     border-color: gray;
@@ -53,9 +66,23 @@ body {
     padding: 10px;
 }
 
-
 .result-display h3 {
     margin-top: 0px;
     margin-bottom: 10px;
     text-decoration: underline;
+}
+
+.problem-results-div table {
+    border-collapse: collapse;
+    margin-left: 10px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.problem-results-div table td, th {
+    border-style: solid;
+    border-width: thin;
+    border-color: black;
+    padding-left: 8px;
+    padding-right: 8px;
 }

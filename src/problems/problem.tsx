@@ -1,4 +1,5 @@
 import { useState, useEffect, FormEvent } from 'react'
+import { ProblemResultInfo, ProblemResults } from '../services/problem_results';
 
 interface Result {
     name: string,
@@ -130,6 +131,30 @@ function Problem(props: ProblemProps) {
         set_input(e.currentTarget.value);
     }
 
+    function to_problem_result_info(result: Result|null, part: number): ProblemResultInfo {
+        if (result == null) {
+            throw Error("A null result cannot be saved.");
+        }
+        if (result.result == null) {
+            throw Error("Can not save result without a valid result.");
+        }
+        
+        return {
+            day: props.day,
+            part: part,
+            result: result.result,
+            execution_date: result.start_time!.toISOString(),
+            execution_time: result.execution_time!,
+        };
+    }
+
+    function on_accept_answers(e: React.MouseEvent<HTMLButtonElement>) {
+        ProblemResults.add([
+            to_problem_result_info(result1, 1),
+            to_problem_result_info(result2, 2),
+        ])
+    }
+
     return (
         <div className="problem-display">
             <h2>Advent of Code <a href={props.problem_link} target="description_view_tab"> Day {props.day}</a></h2>
@@ -151,6 +176,9 @@ function Problem(props: ProblemProps) {
                     &nbsp;<a href={ "/input/" + input_name } target='input_view_tab'>View</a>
                 </p>
             </div>
+            { result1 != null && result1.result != null && result2 != null && result2.result != null &&
+                <button onClick={on_accept_answers}>Accept Answers</button>
+            }
             <ResultDisplay result = { result1 }/>
             <ResultDisplay result = { result2 }/>
         </div>

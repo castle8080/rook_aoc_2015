@@ -23,6 +23,7 @@ import Problem19 from "./problem19";
 import Problem20 from "./problem20";
 import Problem21 from "./problem21";
 import Problem22 from "./problem22";
+import MainHeader from '../components/main_header';
 
 const PROBLEMS = [
     Problem1,
@@ -101,22 +102,26 @@ function create_problem_content(p_info: ProblemInfo|null) {
     return <ProblemComponent/>;
 }
 
+function ProblemNavigation() {
+    return (
+        <div className="problems-navigation">
+            <ul>
+                { PROBLEM_INFO.map((p_info) => 
+                    <li key={p_info.id}><Link to={ `/problem/${p_info.id}` }>{p_info.name}</Link></li>
+                )}
+            </ul>
+        </div>
+    );
+}
+
 function Problems() {
     let { id } = useParams();
     let p_info = get_problem_info(id);
     
     return (<>
-        <div className="main-header">
-            <a href="https://adventofcode.com/2015" target="_blank">Advent of Code 2015</a>
-        </div>
+        <MainHeader/>
         <div className="problems-main">
-            <div className="problems-navigation">
-                <ul>
-                    { PROBLEM_INFO.map((p_info) => 
-                        <li key={p_info.id}><Link to={ `/problem/${p_info.id}` }>{p_info.name}</Link></li>
-                    )}
-                </ul>
-            </div>
+            <ProblemNavigation/>
             <div className="problems-content">
                 { create_problem_content(p_info) }
             </div>
