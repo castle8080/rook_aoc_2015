@@ -1,3 +1,5 @@
+import CSVBuilder from "../csv_builder";
+
 const LOCAL_STORAGE_KEY = "AOC_2015_results";
 
 export interface ProblemResultInfo {
@@ -27,6 +29,35 @@ export class ProblemResults {
         else {
             return JSON.parse(result_str);
         }
+    }
+
+    public static get_csv(): string {
+        const results = ProblemResults.get();
+        return ProblemResults.generate_csv(results);
+    }
+
+    public static generate_csv(results: ProblemResultInfo[]): string {
+        var csv_builder = new CSVBuilder();
+
+        csv_builder.add_row([
+            'Day',
+            'Part',
+            'Result',
+            'ExecutionTime',
+            'Date',
+        ]);
+
+        for (const result of results) {
+            csv_builder.add_row([
+                result.day,
+                result.part,
+                result.result,
+                result.execution_time,
+                result.execution_date,
+            ]);
+        }
+
+        return csv_builder.get_content();
     }
 
     private static compare_problem_result_info(pi1: ProblemResultInfo, pi2: ProblemResultInfo) {

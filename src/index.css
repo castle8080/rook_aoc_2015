@@ -72,11 +72,16 @@ body {
     text-decoration: underline;
 }
 
+.problem-results-div {
+    margin: 10px;
+}
+
+.problem-result-download-div {
+    margin-bottom: 10px;
+}
+
 .problem-results-div table {
     border-collapse: collapse;
-    margin-left: 10px;
-    margin-top: 10px;
-    margin-bottom: 10px;
 }
 
 .problem-results-div table td, th {
