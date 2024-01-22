@@ -1,6 +1,14 @@
 import _ from 'lodash';
 import Problem from './problem';
 
+/**
+ * Regex for parsing boss input text
+ */
+const INPUT_LINE_REGEX = /^(Hit Points|Damage): (\d+)/;
+
+/**
+ * An action a character may take on their turn.
+ */
 interface Action {
     readonly name: string;
     readonly mana_cost: number;
@@ -10,6 +18,9 @@ interface Action {
     apply(game: Game, character: Character): void;
 }
 
+/**
+ * Common implementation for actions.
+ */
 abstract class BaseAction implements Action {
     public abstract readonly name: string;
     public abstract readonly mana_cost: number;
@@ -121,9 +132,13 @@ class AttackAction extends BaseAction {
     }
 } 
 
+/**
+ * An effect which remains for some period of time during the game.
+ * It may change the game state on starts, turns, and/or when the effect is over.
+ */
 interface Effect {
     name: string;
-    counter: number;
+    counter: number|null;
 
     clone(): Effect;
 
@@ -132,23 +147,26 @@ interface Effect {
     on_end(game: Game): void;
 }
 
+/**
+ * A common implementation for effects.
+ */
 abstract class BaseEffect implements Effect {
 
     constructor(
         public name: string,
-        public counter: number,
+        public counter: number|null,
         public character_name: string) {}
 
 
     abstract clone(): Effect;
 
-    on_start(game: Game): void {
+    on_start(_game: Game): void {
     }
 
-    on_turn(game: Game): void {
+    on_turn(_game: Game): void {
     }
 
-    on_end(game: Game): void {
+    on_end(_game: Game): void {
     }
 }
 
@@ -221,16 +239,50 @@ class RechargeEffect extends BaseEffect {
     }
 }
 
+/**
+ * A persistent effect which continues to hurt a character.
+ * 
+ * At the start of each player turn (before any other effects apply), you lose 1 hit point.
+ * 
+ */
+class PersistentHurtEffect extends BaseEffect {
+    
+    constructor(public readonly character_name: string) {
+        super("PersistentHurt", null, character_name);
+    }
+
+    clone(): Effect {
+        return new PersistentHurtEffect(this.character_name);
+    }
+
+    on_turn(game: Game): void {
+        const c = game.get_current_character();
+        if (c.name === this.character_name) {
+            c.hit_points -= 1;
+        }
+    }
+}
+
+/**
+ * The types of characters possible.
+ */
 type CharacterClass = "Wizard" | "Boss";
 
+/**
+ * A character in the game.
+ */
 interface Character {
     readonly name: string;
     readonly character_class: CharacterClass;
+
     hit_points: number;
     armor: number;
     damage: number;
     mana: number;
 
+    /**
+     * Get the general actions a character can do.
+     */
     get_actions(): Action[];
 
     clone(): Character;
@@ -264,6 +316,9 @@ class BaseCharacter implements Character {
         return this.actions;
     }
 
+    /**
+     * Create a default wizard type character.
+     */
     public static create_wizard(
         name: string,
         hit_points: number,
@@ -286,6 +341,9 @@ class BaseCharacter implements Character {
         );
     }
 
+    /**
+     * Create a default boss type character.
+     */
     public static create_boss(
         name: string,
         hit_points: number,
@@ -303,8 +361,68 @@ class BaseCharacter implements Character {
             ]
         )
     }
+
+    /**
+     * Create a boss from the given input definition.
+     */
+    public static create_boss_from_input(input: string): Character {
+        const [boss_hp, boss_damage] = BaseCharacter.parse_boss(input);
+        return BaseCharacter.create_boss("Cyclops", boss_hp, boss_damage);
+    }
+
+    /**
+     * Parse the boss definition.
+     * Return their hp and damage.
+     */
+    public static parse_boss(input: string): [number, number] {
+    
+        let hit_points: number|null = null;
+        let damage: number|null = null;
+    
+        for (let line of input.split("\n")) {
+            line = line.trim();
+            if (line.length > 0) {
+                const m = line.match(INPUT_LINE_REGEX);
+                if (!m) {
+                    throw Error(`Invalid line: ${line}`);
+                }
+                switch (m[1]) {
+                    case "Hit Points":
+                        hit_points = parseInt(m[2]);
+                        break;
+                    case "Damage":
+                        damage = parseInt(m[2]);
+                        break;
+                    default:
+                        throw Error(`Invalid line: ${line}`);
+                }
+            }
+        }
+    
+        if (hit_points === null) {
+            throw Error("Missing hit points.");
+        }
+    
+        if (damage === null) {
+            throw Error("Missing damage.");
+        }
+    
+        return [hit_points, damage];
+    }
 }
 
+/**
+ * The actual game. The general use of the game should be on each turn to:
+ * 
+ *   1. game.start_turn() - To apply any effects.
+ *   2. Check for any characters whose hp dropped to zero.
+ *   3. game.get_current_character() - To get the character for the current turn.
+ *   4. game.get_possible_actions(character) - To get the list of actions that are possible.
+ *   5. Check for zero actions - which would be a loss for the current character.
+ *   6. game.apply_action(action, character) - To apply the chosen action.
+ *   7. Check for any characters whose hp dropped to zero.
+ * 
+ */
 class Game {
     effects: Effect[];
     turn: number;
@@ -317,6 +435,10 @@ class Game {
         this.turn = 0;
     }
 
+    /**
+     * Get a clone of the whole game state, which is useful for looking ahead
+     * and back tracking when searching for a play strategy.
+     */
     clone(): Game {
         let new_game = new Game(this.character1.clone(), this.character2.clone());
         new_game.turn = this.turn;
@@ -324,6 +446,9 @@ class Game {
         return new_game;
     }
 
+    /**
+     * A text description of the game good for debugging.
+     */
     get_game_summary(): string {
         const character = this.get_current_character();
         let summary = "";
@@ -381,8 +506,12 @@ class Game {
         // Notify effects and split effects still valid and not.
         for (const e of this.effects) {
             e.on_turn(this);
-            e.counter--;
-            if (e.counter > 0) {
+            
+            // Infinite effect
+            if (e.counter === null) {
+                new_effects.push(e);
+            }
+            else if (--e.counter > 0) {
                 new_effects.push(e);
             }
             else {
@@ -447,20 +576,37 @@ class GameInfo {
 /**
  * Searches for a play strategy with minimal total mana cost spent.
  */
-class WizardOptimizer {
+abstract class WizardOptimizer {
     private game_info_stack: GameInfo[] = [];
     private optimal_game_info: GameInfo|null = null;
 
     constructor(public readonly game: Game) {
     }
 
+    /**
+     * Determine if a game shouldn't be exlored.
+     */
+    abstract prune_game(gi: GameInfo): boolean;
+
+    /**
+     * Prune any actions to speed up search.
+     */
+    abstract prune_wizard_actions(game: Game, actions: Action[]): Action[];
+
+    /**
+     * Search for a winning game play with minimal mana cost for the wizard. 
+     */
     run(): GameInfo {
         this.game_info_stack = [new GameInfo(this.game.clone(), 0, null, [])];
 
         while (true) {
+            // If an optimal game info has been found return.
+            // The code generally searches in least mana cost order,
+            // so as soon as 1 is found, the search can stop.
             if (this.optimal_game_info !== null) {
                 return this.optimal_game_info;
             }
+
             var gi = this.game_info_stack.pop();
             if (gi === undefined) {
                 throw Error("Unable to find a winner.");
@@ -469,11 +615,80 @@ class WizardOptimizer {
                 this.run_turn(gi);
             }
         }
-
     }
 
+    /**
+     * Runs thorugh the turn for the current game info.
+     */
+    run_turn(gi: GameInfo) {
+
+        // Check if this is a winner.
+        if (gi.winner != null) {
+            this.on_win(gi);
+            return;
+        }
+
+        // Allow for games to be pruned for optimizing search.
+        if (this.prune_game(gi)) {
+            return;
+        }
+
+        // Start the current turn for the game.
+        const game = gi.game;
+        game.start_turn();
+
+        // Check for death after effects
+        if (this.check_zero_hp(gi)) {
+            this.add_game_info(gi);
+            return;
+        }
+
+        // Get the list of actions the user can perform.
+        const character = game.get_current_character();
+        const actions = game.get_possible_actions(character);
+
+        // If no actions the current user has lost.
+        if (actions.length == 0) {
+            var opponent = game.get_opponent_for(character.name);
+            gi.winner = opponent.name;
+            this.add_game_info(gi);
+            return;
+        }
+
+        // If there is only 1 action, cloning can be skipped.
+        else if (actions.length == 1) {
+            this.take_action(gi, character, actions[0]);
+        }
+        else {
+            for (const action of this.prune_wizard_actions(gi.game, actions)) {
+                let new_gi = gi.clone();
+                let new_character = new_gi.game.get_character(character.name);
+                this.take_action(new_gi, new_character, action);
+            }
+        }
+    }
+
+    /**
+     * Applies the current action and sets the next game state to explore.
+     */
+    take_action(gi: GameInfo, character: Character, action: Action) {
+        if (character.character_class == 'Wizard') {
+            gi.total_wizard_mana_spent += action.mana_cost;
+        }
+        gi.game.apply_action(character, action);
+        gi.history.push(action);
+        this.check_zero_hp(gi);
+        this.add_game_info(gi);
+    }
+
+    /**
+     * Called when a win is found for a game.
+     */
     on_win(gi: GameInfo) {
         const winner = gi.game.get_character(gi.winner!);
+
+        // If the wizard won and the total mana cost is less than the
+        // previously known win, store the optimal game info.
         if (winner.character_class == "Wizard") {
             if (this.optimal_game_info === null ||
                 gi.total_wizard_mana_spent < this.optimal_game_info.total_wizard_mana_spent)
@@ -483,6 +698,10 @@ class WizardOptimizer {
         }
     }
 
+    /**
+     * Checks of any character dropped to zero and sets the winner
+     * if another character dropped to zero or less.
+     */
     check_zero_hp(gi: GameInfo): boolean {
         if (gi.game.character1.hit_points <= 0) {
             gi.winner = gi.game.character2.name;
@@ -495,10 +714,38 @@ class WizardOptimizer {
         return false;
     }
 
+    /**
+     * Put a game info node onto the search queue.
+     */
     add_game_info(gi: GameInfo) {
         // TODO find or build a heap data structure
-        this.game_info_stack.push(gi);
-        this.game_info_stack.sort((gi1, gi2) => gi2.total_wizard_mana_spent - gi1.total_wizard_mana_spent);
+        const stack = this.game_info_stack;
+
+        stack.push(gi);
+
+        // bubble the value up the stack to the right position.
+        // Keep the stack sorted with the least total wizard mana spent at the end.
+        for (let i = stack.length - 1; i > 0; i--) {
+            if (stack[i].total_wizard_mana_spent > stack[i-1].total_wizard_mana_spent) {
+                let tmp = stack[i-1];
+                stack[i-1] = stack[i];
+                stack[i] = tmp;
+            }
+            else {
+                return;
+            }
+        }
+    }
+}
+
+/**
+ * Based on conditions for the first level of the game,
+ * this strategy prunes games and some actions.
+ */
+class WizardOptimizerStrategy1 extends WizardOptimizer {
+    
+    constructor(game: Game) {
+        super(game);
     }
 
     prune_game(gi: GameInfo): boolean {
@@ -509,61 +756,6 @@ class WizardOptimizer {
         }
 
         return false;
-    }
-
-    run_turn(gi: GameInfo) {
-        if (gi.winner != null) {
-            this.on_win(gi);
-            return;
-        }
-
-        if (this.prune_game(gi)) {
-            return;
-        }
-
-        const game = gi.game;
-        game.start_turn();
-
-        // Check for death after effects
-        if (this.check_zero_hp(gi)) {
-            this.add_game_info(gi);
-            return;
-        }
-
-        const character = game.get_current_character();
-        const actions = game.get_possible_actions(character);
-
-        if (actions.length == 0) {
-            var opponent = game.get_opponent_for(character.name);
-            gi.winner = opponent.name;
-            this.add_game_info(gi);
-            return;
-        }
-        else if (actions.length == 1) {
-            // For actions of length 1 no need to clone.
-            if (character.character_class == 'Wizard') {
-                gi.total_wizard_mana_spent += actions[0].mana_cost;
-            }
-            
-            game.apply_action(character, actions[0]);
-            gi.history.push(actions[0]);
-            this.check_zero_hp(gi);
-            this.add_game_info(gi);
-        }
-        else {
-            for (const action of this.prune_wizard_actions(gi.game, actions)) {
-                let new_gi = gi.clone();
-                let new_character = new_gi.game.get_character(character.name);
-                if (new_character.character_class == 'Wizard') {
-                    new_gi.total_wizard_mana_spent += action.mana_cost;
-                }
-
-                new_gi.game.apply_action(new_character, action);
-                new_gi.history.push(action);
-                this.check_zero_hp(new_gi);
-                this.add_game_info(new_gi);
-            }
-        }
     }
 
     prune_wizard_actions(game: Game, actions: Action[]): Action[] {
@@ -599,59 +791,74 @@ class WizardOptimizer {
     }
 }
 
-const INPUT_LINE_REGEX = /^(Hit Points|Damage): (\d+)/;
+/**
+ * Based on conditions for the hard level of the game,
+ * this strategy prunes games and some actions.
+ */
+class WizardOptimizerStrategy2 extends WizardOptimizer {
 
-function parse_boss_input(input: string): [number, number] {
-    
-    let hit_points: number|null = null;
-    let damage: number|null = null;
+    constructor(game: Game) {
+        super(game);
+    }
 
-    for (let line of input.split("\n")) {
-        line = line.trim();
-        if (line.length > 0) {
-            const m = line.match(INPUT_LINE_REGEX);
-            if (!m) {
-                throw Error(`Invalid line: ${line}`);
-            }
-            switch (m[1]) {
-                case "Hit Points":
-                    hit_points = parseInt(m[2]);
-                    break;
-                case "Damage":
-                    damage = parseInt(m[2]);
-                    break;
-                default:
-                    throw Error(`Invalid line: ${line}`);
-            }
+    prune_game(gi: GameInfo): boolean {
+        if (gi.game.character1.hit_points < 10 && gi.game.character2.hit_points >= 20) {
+            return true;
         }
+        return false;
     }
 
-    if (hit_points === null) {
-        throw Error("Missing hit points.");
-    }
+    prune_wizard_actions(game: Game, actions: Action[]): Action[] {
+        const boss = game.character2;
+        
+        // On 1 action ust return.
+        if (actions.length == 1) {
+            return actions;
+        }
 
-    if (damage === null) {
-        throw Error("Missing damage.");
-    }
+        // No need to use magic missile since poison is great
+        const can_poison = actions.find(a => a.name == 'Poison') !== undefined;
+        if (can_poison && boss.hit_points > 8) {
+            actions = actions.filter(a => a.name != "MagicMissile");
+        }
 
-    return [hit_points, damage];
+        return actions;
+    }
 }
 
-async function part1(input: string): Promise<number> {
-    const [boss_hp, boss_damage] = parse_boss_input(input);
-
+function run_part(
+    input: string,
+    customizer: (game: Game) => void,
+    optimizer: (game: Game) => WizardOptimizer): number
+{
     const wizard = BaseCharacter.create_wizard("Dumbeldore", 50, 500);
-    const boss = BaseCharacter.create_boss("Cyclops", boss_hp, boss_damage);
+    const boss = BaseCharacter.create_boss_from_input(input);
 
     const game = new Game(wizard, boss);
-    const wizard_opt = new WizardOptimizer(game);
+
+    customizer(game);
+    const wizard_opt = optimizer(game);
     const game_info = wizard_opt.run();
+
+    console.log(game_info);
 
     return game_info.total_wizard_mana_spent;
 }
 
+async function part1(input: string): Promise<number> {
+    return run_part(
+        input,
+        _game => {},
+        game => new WizardOptimizerStrategy1(game)
+    );
+}
+
 async function part2(input: string): Promise<number> {
-    return -1;
+    return run_part(
+        input,
+        game => { game.add_effect(new PersistentHurtEffect(game.character1.name)) },
+        game => new WizardOptimizerStrategy2(game)
+    );
 }
 
 function Problem22() {
