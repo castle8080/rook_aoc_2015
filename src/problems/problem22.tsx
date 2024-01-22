@@ -820,6 +820,9 @@ class WizardOptimizerStrategy2 extends WizardOptimizer {
             return actions;
         }
 
+        // Drain is useless
+        actions = actions.filter(a => a.name != "Drain");
+        
         // No need to use magic missile since poison is great
         const can_poison = actions.find(a => a.name == 'Poison') !== undefined;
         if (can_poison && boss.hit_points > 8) {
