@@ -579,6 +579,8 @@ class GameInfo {
 abstract class WizardOptimizer {
     private game_info_stack: GameInfo[] = [];
     private optimal_game_info: GameInfo|null = null;
+    
+    public game_states_evaluated = 0;
 
     constructor(public readonly game: Game) {
     }
@@ -598,6 +600,7 @@ abstract class WizardOptimizer {
      */
     run(): GameInfo {
         this.game_info_stack = [new GameInfo(this.game.clone(), 0, null, [])];
+        this.game_states_evaluated = 0;
 
         while (true) {
             // If an optimal game info has been found return.
@@ -612,6 +615,7 @@ abstract class WizardOptimizer {
                 throw Error("Unable to find a winner.");
             }
             else {
+                this.game_states_evaluated++;
                 this.run_turn(gi);
             }
         }
@@ -840,6 +844,7 @@ function run_part(
     const wizard_opt = optimizer(game);
     const game_info = wizard_opt.run();
 
+    console.log(`Game states evaluated: ${wizard_opt.game_states_evaluated}`);
     console.log(game_info);
 
     return game_info.total_wizard_mana_spent;
