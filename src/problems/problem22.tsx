@@ -480,9 +480,6 @@ class Game {
 
     apply_action(character: Character, action: Action) {
         action.apply(this, character);
-        if (character.mana < 0) {
-            throw Error(`How!`);
-        }
     }
 
     add_effect(effect: Effect) {
@@ -815,7 +812,7 @@ class WizardOptimizerStrategy2 extends WizardOptimizer {
     prune_wizard_actions(game: Game, actions: Action[]): Action[] {
         const boss = game.character2;
         
-        // On 1 action ust return.
+        // On 1 action just return.
         if (actions.length == 1) {
             return actions;
         }
