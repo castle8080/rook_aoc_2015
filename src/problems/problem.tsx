@@ -82,14 +82,10 @@ interface ResultDisplayProps {
 
 function ResultDisplay(props: ResultDisplayProps) {
     return ( <>
-        <div>
+        <div className="result-display">
             <h3>{props.result?.name}</h3>
             { props.result?.start_time !== null && <>
-                <b>Started:</b> {props.result?.start_time?.toISOString()}
-                <br/>
                 { props.result?.end_time !== null && <>
-                    <b>Ended: </b>{props.result?.end_time?.toISOString()}
-                    <br/>
                     { props.result?.result !== null && <>
                         <b>Result: </b>{props.result?.result}
                         <br/>
@@ -136,7 +132,7 @@ function Problem(props: ProblemProps) {
 
     return (
         <div className="problem-display">
-            <h2>Day {props.day}</h2>
+            <h2>Advent of Code <a href={props.problem_link} target="description_view_tab"> Day {props.day}</a></h2>
             { processing_error !== null && <>
                 <div>
                     <p>
@@ -146,18 +142,13 @@ function Problem(props: ProblemProps) {
             </> }
             <div>
                 <p>
-                    <a href={props.problem_link} target="description_view_tab">Description</a>
-                </p>
-                <b>Inputs:</b>
-                <p>
+                    <b>Input: </b>
                     <select defaultValue={ input_name } onChange={ on_select_input }>
                         { props.inputs.map((input) => 
                             <option key={ input }>{ input } </option>
                         )}
                     </select>
-                </p>
-                <p>
-                    <a href={ "/input/" + input_name } target='input_view_tab'>View Input</a>
+                    &nbsp;<a href={ "/input/" + input_name } target='input_view_tab'>View</a>
                 </p>
             </div>
             <ResultDisplay result = { result1 }/>

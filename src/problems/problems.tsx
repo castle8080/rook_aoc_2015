@@ -22,6 +22,7 @@ import Problem18 from "./problem18";
 import Problem19 from "./problem19";
 import Problem20 from "./problem20";
 import Problem21 from "./problem21";
+import Problem22 from "./problem22";
 
 const PROBLEMS = [
     Problem1,
@@ -45,6 +46,7 @@ const PROBLEMS = [
     Problem19,
     Problem20,
     Problem21,
+    Problem22,
 ];
 
 interface ProblemInfo {
@@ -103,10 +105,12 @@ function Problems() {
     let { id } = useParams();
     let p_info = get_problem_info(id);
     
-    return (
+    return (<>
+        <div className="main-header">
+            <a href="https://adventofcode.com/2015" target="_blank">Advent of Code 2015</a>
+        </div>
         <div className="problems-main">
             <div className="problems-navigation">
-                <b>Problems</b>
                 <ul>
                     { PROBLEM_INFO.map((p_info) => 
                         <li key={p_info.id}><Link to={ `/problem/${p_info.id}` }>{p_info.name}</Link></li>
@@ -114,11 +118,10 @@ function Problems() {
                 </ul>
             </div>
             <div className="problems-content">
-                <h2><a href="https://adventofcode.com/2015" target="_blank">Advent of Code 2015</a></h2>
                 { create_problem_content(p_info) }
             </div>
         </div>
-    );
+    </>);
 }
 
 export default Problems;

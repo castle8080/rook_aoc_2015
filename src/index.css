@@ -1,3 +1,20 @@
+body {
+    margin: 0px;
+}
+
+.main-header {
+    margin: 0;
+    background: navy;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    padding-left: 4px;
+}
+
+.main-header a {
+    color: white;
+    text-decoration: none;
+    font-weight: normal;
+}
 
 .problems-main {
     display: flex;
@@ -13,6 +30,7 @@
 
 .problems-navigation ul {
     list-style-type: none;
+    margin-top: 0px;
     margin-left: 10px;
     padding: 0px;
 }
@@ -24,4 +42,20 @@
 
 .problems-content h2 {
     margin-top: 0px;
+}
+
+.result-display {
+    border-style: solid;
+    border-color: gray;
+    border-width: thin;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    padding: 10px;
+}
+
+
+.result-display h3 {
+    margin-top: 0px;
+    margin-bottom: 10px;
+    text-decoration: underline;
 }
