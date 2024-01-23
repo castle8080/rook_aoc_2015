@@ -1,6 +1,7 @@
 import { useParams, Link } from 'react-router-dom';
 import { JSX } from 'react';
 
+import MainHeader from '../components/main_header';
 import Problem1 from "./problem1";
 import Problem2 from "./problem2";
 import Problem3 from "./problem3";
@@ -23,7 +24,7 @@ import Problem19 from "./problem19";
 import Problem20 from "./problem20";
 import Problem21 from "./problem21";
 import Problem22 from "./problem22";
-import MainHeader from '../components/main_header';
+import Problem23 from "./problem23";
 
 const PROBLEMS = [
     Problem1,
@@ -48,6 +49,7 @@ const PROBLEMS = [
     Problem20,
     Problem21,
     Problem22,
+    Problem23,
 ];
 
 interface ProblemInfo {
